@@ -37,8 +37,12 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      // send conversation to backend proxy which uses OPENAI_API_KEY
-      const res = await fetch(`/api/chat`, {
+      // Use Gemini API through our backend
+      const apiUrl = import.meta.env.DEV 
+        ? 'http://localhost:3000/api/chat'
+        : '/api/chat';
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [...messages, userMessage] }),
