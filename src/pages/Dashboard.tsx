@@ -165,6 +165,23 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <Card 
               className="shadow-card hover:shadow-elevated transition-all cursor-pointer group"
+              onClick={() => navigate("/health-tracking")}
+            >
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors group-hover:scale-110">
+                    <Activity className="w-8 h-8 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Health Tracking</h3>
+                    <p className="text-muted-foreground">Track vitals and symptoms</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="shadow-card hover:shadow-elevated transition-all cursor-pointer group"
               onClick={() => navigate("/daily-quiz")}
             >
               <CardContent className="pt-6">
@@ -197,7 +214,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer group">
+            <Card 
+              className="shadow-card hover:shadow-elevated transition-all cursor-pointer group"
+              onClick={() => navigate("/insurance")}
+            >
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors group-hover:scale-110">

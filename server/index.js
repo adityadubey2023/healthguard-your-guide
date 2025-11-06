@@ -7,42 +7,53 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAtm15ZFknmgZwk0omTjNQk_GsC6M7144c';
 
-if (!OPENAI_API_KEY) {
-  console.warn('Warning: OPENAI_API_KEY not set. Requests to /api/chat will fail until you set it.');
+if (!GEMINI_API_KEY) {
+  console.warn('Warning: GEMINI_API_KEY not set. Requests to /api/chat will fail until you set it.');
 }
 
 app.post('/api/chat', async (req, res) => {
   try {
     const messages = req.body.messages || [];
-    const systemMessage = {
-      role: 'system',
-      content:
-        "You are HealthGuard assistant. Provide friendly, concise, non-diagnostic health guidance and recommend seeing a professional when appropriate. Keep responses helpful and safe.",
-    };
+    
+    // Build conversation history for Gemini
+    const conversationText = messages.map((m) => {
+      const role = m.role === 'bot' ? 'model' : 'user';
+      return `${role}: ${m.content}`;
+    }).join('\n');
 
-    const openaiMessages = [
-      systemMessage,
-      ...messages.map((m) => ({ role: m.role === 'bot' ? 'assistant' : m.role, content: m.content })),
-    ];
+    const prompt = `You are HealthGuard assistant. Provide friendly, concise, non-diagnostic health guidance and recommend seeing a professional when appropriate. Keep responses helpful and safe.
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+${conversationText}
+model:`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: openaiMessages, max_tokens: 700 }),
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 700,
+        }
+      }),
     });
 
     if (!response.ok) {
       const text = await response.text();
+      console.error('Gemini API error:', text);
       return res.status(response.status).send(text);
     }
 
     const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content || '';
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
     res.json({ reply });
   } catch (err) {
     console.error(err);
